@@ -48,7 +48,7 @@ barplot_identity <- function(data, x_value, y_value, fill_group,
 
     # test the data, must give error value and y value,  as stat = identity
     if(missing(errbar) & missing(y_value)){
-        stop("must give a column for y and errbar, if none using the function of barplotting_stat!")
+        stop("must give a column for y and errbar, if none using the function of barplotting_conitnuous!")
     }else if(!missing(errbar) & lab_text){
         stop("can't have both error bar and y value text!")
     }
@@ -105,7 +105,7 @@ barplot_identity <- function(data, x_value, y_value, fill_group,
                   legend.position = legend.position,
                   legend.title = element_blank(),
                   legend.text= element_text(color="black", size = legend.size),
-                  axis.text.x = element_text(colour = 'black', angle = xlab.angle),
+                  axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
                   axis.ticks.x = element_blank())
     }else{
         p = p + plot.theme
@@ -209,7 +209,7 @@ barplot_discrete <- function(data, x, count,
                   legend.position = legend.position,
                   legend.title = element_blank(),
                   legend.text= element_text(color="black", size = legend.size),
-                  axis.text.x = element_text(colour = 'black', angle = xlab.angle),
+                  axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
                   axis.ticks.x = element_blank())
     }else{
         p = p + plot.theme
@@ -350,7 +350,7 @@ barplot_continuous <- function(data, x, sub.x, value,
                   legend.position = legend.position,
                   legend.title = element_blank(),
                   legend.text= element_text(color="black", size = legend.size),
-                  axis.text.x = element_text(colour = 'black', angle = xlab.angle),
+                  axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
                   axis.ticks.x = element_blank())
     }else{
         p = p + plot.theme

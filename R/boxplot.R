@@ -19,13 +19,15 @@
 #' @param xlab.angle if rotate the x labs defualt 0
 #' @param pal color for filling  default pal_lancet
 #' @param chinese if text in Chinese ,default False
-#' @param plot.theme text size the the labs add on the bar
+#' @param plot.theme plot.theme
 #'
-#' @return  ggplot plot
+#' @return  ggplot plot object
 #' @export
 #'
-#' @examples myboxplot(data = ToothGrowth, x_value = 'dose', y_value = 'len', group = 'supp', jitter = T , box.fill = T, box.color = T, xlab_level = c("2", "1", "0.5"), plot.theme = ggprism::theme_prism())
-myboxplot <- function(data, x_value, y_value, group, paired,
+#' @examples boxplot(data = ToothGrowth, x_value = 'dose', y_value = 'len', group = 'supp', jitter = T , box.fill = T, box.color = T, xlab_level = c("2", "1", "0.5"), plot.theme = ggprism::theme_prism())
+#'           boxplot(data = data, x_value = 'group', y_value = 'Gene_Expression', group = 'group', title = '', y_lab = 'Gene Expression')
+#'           boxplot(data = data, x_value = 'group', y_value = 'Gene_Expression', group = 'group', title = '', y_lab = 'Gene Expression', paired = 'pair')
+boxplot <- function(data, x_value, y_value, group, paired,
                     box.fill = T, box.color = F, jitter = F,
                     xlab_level, group_level,
                     title = NULL, x_lab =NULL, y_lab='',
@@ -111,7 +113,7 @@ myboxplot <- function(data, x_value, y_value, group, paired,
                   legend.position = legend.position,
                   legend.title = element_blank(),
                   legend.text= element_text(color="black", size = legend.size),
-                  axis.text.x = element_text(colour = 'black', angle = xlab.angle),
+                  axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
                   axis.ticks.x = element_blank())
     }else{
         p = p + plot.theme
