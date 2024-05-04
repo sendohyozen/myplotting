@@ -39,7 +39,7 @@ ggpie_stat(
 
 \item{label_pos}{Label position, chosen from in and out. Default: in}
 
-\item{label_threshold}{Threshold of the ratio to determine label position (in/out pie). Default: NULL.}
+\item{label_threshold}{Threshold of the ratio to determine label position (in/out pie). Default: NULL. This parameter only works when  label_pos = 'in' and label_rotate = 'horizon'}
 
 \item{pal}{Colors used. Default: ggsci::pal_futurama(alpha = 0.8)(12)}
 

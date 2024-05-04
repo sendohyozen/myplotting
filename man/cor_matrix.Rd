@@ -8,19 +8,24 @@ cor_matrix(
   cor.matrix,
   method = "spearman",
   show = "mix",
+  tpye = "upper",
   shape = "ellipse",
   title = "",
   lab.color = "black",
   lab.size = 1,
-  pal = colorRampPalette(c("#2254aa", "white", "#f3261f"))(100)
+  pal = corrplot::COL2("RdBu", 10),
+  order = "AOE",
+  addrect = 2
 )
 }
 \arguments{
-\item{cor.matrix}{data frame with different vars: row samples, columns different var names (all in cor analysis)}
+\item{cor.matrix}{data frame with different vars: row samples, columns different var names (cor analysis in function)}
 
 \item{method}{cor analyse method can be "pearson", "spearman", "kendall", default spearman}
 
-\item{show}{can only be mix or upper, default mix:with shapes (upper) and cor values (lower)}
+\item{show}{can only be mix or consist, default mix:with shapes (upper) and cor values (lower)}
+
+\item{tpye}{used in the consist model, can be full','lower','upper'(defult)}
 
 \item{shape}{can be 'circle', 'square', 'ellipse', 'number', 'pie', 'shade' and 'color'; default ellipse}
 
@@ -30,7 +35,11 @@ cor_matrix(
 
 \item{lab.size}{text size of labs}
 
-\item{pal}{color bar for cor value}
+\item{pal}{color bar for cor value, show = mix can't be used .only in COL2 form}
+
+\item{order}{the order to put factors,defualt AOE}
+
+\item{addrect}{rect to add on the plot ,only order of "hclust" can be showed, defualt 2}
 }
 \value{
 a cor plot for multi factors
@@ -39,5 +48,5 @@ a cor plot for multi factors
 show correlation plot for multiple variables (more than two vars, show by matrix, not scatter points)
 }
 \examples{
-cor_matrix1(cor.matrix = mtcars, show = 'upper', shape = 'pie')
+cor_matrix(cor.matrix = mtcars, show = 'upper', shape = 'pie')
 }

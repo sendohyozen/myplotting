@@ -19,7 +19,7 @@ paretoplot_lab(
   title = NULL,
   x_lab = NULL,
   y_lab = "",
-  base.size = 15,
+  base.size = 18,
   legend.position = "top",
   legend.size = 12,
   chinese = F,
@@ -53,7 +53,7 @@ paretoplot_lab(
 
 \item{y_lab}{plot x lab default ''}
 
-\item{base.size}{base text size of the theme default 15}
+\item{base.size}{base text size of the theme default 18}
 
 \item{legend.position}{legend position default top}
 

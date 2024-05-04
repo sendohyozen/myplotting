@@ -14,7 +14,7 @@
 #' @param title plot title
 #' @param x_lab plot x lab
 #' @param y_lab plot y lab
-#' @param base.size base text size of the theme default 15
+#' @param base.size base text size of the theme default 18
 #' @param legend.position legend position default top
 #' @param legend.size legend text size default 12
 #' @param xlab.angle if rotate the x labs defualt 0
@@ -31,7 +31,7 @@ lineplot_identity <-  function(data,  x_value, y_value, group,
                                shape.size = 3, line.width = 0.7, text.size = 3,
                                xlab_level, group_level,
                                title = NULL, x_lab =NULL, y_lab='',
-                               base.size=15, legend.position = 'top', legend.size =12, xlab.angle=0,
+                               base.size=18, legend.position = 'top', legend.size =12, xlab.angle=0,
                                pal= ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
                                chinese = F,
                                plot.theme ){
@@ -101,6 +101,7 @@ lineplot_identity <-  function(data,  x_value, y_value, group,
                   legend.title = element_blank(),
                   legend.text= element_text(color="black", size = legend.size),
                   axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
+                  axis.text.y = element_text(colour = 'black'),
                   axis.ticks.x = element_blank())
     }else{
         p = p + plot.theme

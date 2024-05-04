@@ -13,7 +13,7 @@
 #' @param title plot title
 #' @param x_lab plot x lab
 #' @param y_lab  plot y lab
-#' @param base.size base text size of the theme default 15
+#' @param base.size base text size of the theme default 18
 #' @param legend.position legend position default top
 #' @param legend.size legend text size default 12
 #' @param xlab.angle if rotate the x labs defualt 0
@@ -31,7 +31,7 @@ boxplot <- function(data, x_value, y_value, group, paired,
                     box.fill = T, box.color = F, jitter = F,
                     xlab_level, group_level,
                     title = NULL, x_lab =NULL, y_lab='',
-                    base.size=15, legend.position = 'top', legend.size =12, xlab.angle=0,
+                    base.size=18, legend.position = 'top', legend.size =12, xlab.angle=0,
                     pal= ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
                     chinese = F,
                     plot.theme){
@@ -108,12 +108,13 @@ boxplot <- function(data, x_value, y_value, group, paired,
 
     # theme
     if(missing(plot.theme)){
-        p = p + theme_classic(base_size = base.size, base_family = font.family ) +
+        p = p + theme_classic(base_size = base.size,  base_family = font.family ) +
             theme(plot.title = element_text(colour = "black", face = "bold", hjust = 0.5),
                   legend.position = legend.position,
                   legend.title = element_blank(),
                   legend.text= element_text(color="black", size = legend.size),
                   axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
+                  axis.text.y = element_text(colour = 'black'),
                   axis.ticks.x = element_blank())
     }else{
         p = p + plot.theme

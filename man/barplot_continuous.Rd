@@ -14,11 +14,12 @@ barplot_continuous(
   labtext.size = 3,
   xlab_level,
   fill_level,
+  y_limit_expand,
   bar_width = 0.9,
   title = NULL,
   x_lab = NULL,
   y_lab = "",
-  base.size = 15,
+  base.size = 18,
   legend.position = "top",
   legend.size = 12,
   xlab.angle = 0,
@@ -46,6 +47,8 @@ barplot_continuous(
 
 \item{fill_level}{levels of fill (legend)}
 
+\item{y_limit_expand}{expand the y limit, give a numer of percent of y low/up limit, such as c(0, 0.05) for expanding 0\% to lower limit and 5\% to upper limit, default NULL}
+
 \item{bar_width}{bar width default 0.9}
 
 \item{title}{plot title}
@@ -54,7 +57,7 @@ barplot_continuous(
 
 \item{y_lab}{plot y lab}
 
-\item{base.size}{base text size of the theme default 15}
+\item{base.size}{base text size of the theme default 18}
 
 \item{legend.position}{legend position default top}
 

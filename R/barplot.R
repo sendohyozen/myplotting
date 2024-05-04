@@ -16,12 +16,13 @@
 #' @param bar_width bar width default 0.6
 #' @param pal color for filling  default pal_lancet
 #' @param plot.theme theme for plot deault classic
-#' @param base.size base text size of the theme default 15
+#' @param base.size base text size of the theme default 18
 #' @param legend.position legend position default top
 #' @param legend.size legend text size default 12
 #' @param xlab.angle  if rotate the x labs defualt 0
 #' @param chinese if text in Chinese ,default False
 #' @param labtext.size text size the the labs add on the bar
+#' @param y_limit_expand expand the y limit, give a numer of percent of y low/up limit, such as c(0, 0.05) for expanding 0% to lower limit and 5% to upper limit, default NULL
 #'
 #' @return ggplot2 bar plot
 #' @export
@@ -30,9 +31,10 @@
 barplot_identity <- function(data, x_value, y_value, fill_group,
                              errbar, lab_text=F, labtext.size = 3,
                              xlab_level, fill_level,
+                             y_limit_expand,
                              title = NULL, x_lab =NULL, y_lab='',
                              bar_width = 0.6,
-                             base.size=15, legend.position = 'top', legend.size =12, xlab.angle=0,
+                             base.size=18, legend.position = 'top', legend.size =12, xlab.angle=0,
                              pal= ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
                              chinese = F,
                              plot.theme) {
@@ -54,16 +56,33 @@ barplot_identity <- function(data, x_value, y_value, fill_group,
     }
 
     # plotting data
-    if(missing(errbar)){
-        plot_df = data.frame(x = data[[x_value]],
-                             y = data[[y_value]],
-                             fill = data[[fill_group]])
+    if(missing(fill_group)){
+        #  fill group miss, default give one same value, for only one color
+        if(missing(errbar)){
+            plot_df = data.frame(x = data[[x_value]],
+                                 y = data[[y_value]],
+                                 fill = '1')
+        }else{
+            plot_df = data.frame(x = data[[x_value]],
+                                 y = data[[y_value]],
+                                 fill = '1',
+                                 sd = data[[errbar]])
+        }
+
     }else{
-        plot_df = data.frame(x = data[[x_value]],
-                             y = data[[y_value]],
-                             fill = data[[fill_group]],
-                             sd = data[[errbar]])
+        #  fill group given
+        if(missing(errbar)){
+            plot_df = data.frame(x = data[[x_value]],
+                                 y = data[[y_value]],
+                                 fill = data[[fill_group]])
+        }else{
+            plot_df = data.frame(x = data[[x_value]],
+                                 y = data[[y_value]],
+                                 fill = data[[fill_group]],
+                                 sd = data[[errbar]])
+        }
     }
+
 
     # lab legend order- seting factors
     if(!missing(xlab_level)){
@@ -81,6 +100,11 @@ barplot_identity <- function(data, x_value, y_value, fill_group,
     # plotting
     p = ggplot(data = plot_df, aes(x=x, y=y, group = fill)) +
         geom_col(aes(fill=fill), colour = 'black', position="dodge", width = bar_width)  # geom_col ,can't be geom_bar
+
+    if(!missing(y_limit_expand)){
+        p = p + scale_y_continuous(expand = c(y_limit_expand[1], 0, y_limit_expand[2], 0))   # y轴上下限扩展百分比, 第一个向下扩展， 第二个参数为向上扩展%  https://github.com/tidyverse/ggplot2/issues/1669
+    }
+
 
     p = p + scale_fill_manual(values = pal) +
         ggtitle(title) +  xlab(x_lab) +  ylab(y_lab)
@@ -106,6 +130,7 @@ barplot_identity <- function(data, x_value, y_value, fill_group,
                   legend.title = element_blank(),
                   legend.text= element_text(color="black", size = legend.size),
                   axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
+                  axis.text.y = element_text(colour = 'black'),
                   axis.ticks.x = element_blank())
     }else{
         p = p + plot.theme
@@ -136,11 +161,12 @@ barplot_identity <- function(data, x_value, y_value, fill_group,
 #' @param y_lab plot y lab
 #' @param pal color for filling  default pal_lancet
 #' @param plot.theme theme for plot deault classic
-#' @param base.size base text size of the theme default 15
+#' @param base.size base text size of the theme default 18
 #' @param legend.position legend position default top
 #' @param legend.size legend text size default 12
 #' @param xlab.angle if rotate the x labs defualt 0
 #' @param chinese if text in Chinese ,default False
+#' @param y_limit_expand expand the y limit, give a numer of percent of y low/up limit, such as c(0, 0.05) for expanding 0% to lower limit and 5% to upper limit, default NULL
 #'
 #' @return ggplot plot
 #' @export
@@ -150,9 +176,10 @@ barplot_discrete <- function(data, x, count,
                              bar_location = 'dodge',
                              lab_text=T,
                              xlab_level,
+                             y_limit_expand,
                              bar_width = 0.9,
                              title = NULL, x_lab = NULL, y_lab='',
-                             base.size=15, legend.position = 'top', legend.size =12, xlab.angle=0,
+                             base.size=18, legend.position = 'top', legend.size =12, xlab.angle=0,
                              pal = ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
                              chinese = F,
                              plot.theme){
@@ -178,6 +205,11 @@ barplot_discrete <- function(data, x, count,
     # plotting
     p = ggplot(plot_df, aes(x = x, fill=y)) +
         geom_bar(stat="count", position = bar_location, width = bar_width)
+
+    if(!missing(y_limit_expand)){
+        p = p + scale_y_continuous(expand = c(y_limit_expand[1], 0, y_limit_expand[2], 0))   # y轴上下限扩展百分比, 第一个向下扩展， 第二个参数为向上扩展%  https://github.com/tidyverse/ggplot2/issues/1669
+    }
+
 
     # add y value text
     if(lab_text){
@@ -210,6 +242,7 @@ barplot_discrete <- function(data, x, count,
                   legend.title = element_blank(),
                   legend.text= element_text(color="black", size = legend.size),
                   axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
+                  axis.text.y = element_text(colour = 'black'),
                   axis.ticks.x = element_blank())
     }else{
         p = p + plot.theme
@@ -239,12 +272,13 @@ barplot_discrete <- function(data, x, count,
 #' @param y_lab plot y lab
 #' @param pal color for filling  default pal_lancet
 #' @param plot.theme theme for plot deault classic
-#' @param base.size base text size of the theme default 15
+#' @param base.size base text size of the theme default 18
 #' @param legend.position legend position default top
 #' @param legend.size legend text size default 12
 #' @param xlab.angle if rotate the x labs defualt 0
 #' @param chinese if text in Chinese ,default False
 #' @param labtext.size text size the the labs add on the bar
+#' @param y_limit_expand expand the y limit, give a numer of percent of y low/up limit, such as c(0, 0.05) for expanding 0% to lower limit and 5% to upper limit, default NULL
 #'
 #' @return ggplot plot
 #' @export
@@ -253,9 +287,10 @@ barplot_discrete <- function(data, x, count,
 barplot_continuous <- function(data, x, sub.x, value,
                                errbar = T, lab_text=F, labtext.size=3,
                                xlab_level, fill_level,
+                               y_limit_expand,
                                bar_width = 0.9,
                                title = NULL, x_lab =NULL, y_lab='',
-                               base.size=15, legend.position = 'top', legend.size =12, xlab.angle=0,
+                               base.size=18, legend.position = 'top', legend.size =12, xlab.angle=0,
                                pal = ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
                                chinese = F,
                                plot.theme ){
@@ -296,6 +331,11 @@ barplot_continuous <- function(data, x, sub.x, value,
         p = ggplot(data = dat, aes(x=var1, y=mean, group = var2)) +
             geom_col(aes(fill=var2), colour = 'black', position="dodge", width = bar_width)
 
+        if(!missing(y_limit_expand)){
+            p = p + scale_y_continuous(expand = c(y_limit_expand[1], 0, y_limit_expand[2], 0))   # y轴上下限扩展百分比, 第一个向下扩展， 第二个参数为向上扩展%  https://github.com/tidyverse/ggplot2/issues/1669
+        }
+
+
     }else{
         # only 1 factors given
         plot_df = data.frame(var1 = data[[x]],
@@ -315,6 +355,11 @@ barplot_continuous <- function(data, x, sub.x, value,
         # ploting
         p = ggplot(data = dat, aes(x=var1, y=mean, group = var1)) +
             geom_col(aes(fill=var1), colour = 'black', position="dodge", width = bar_width)
+
+        if(!missing(y_limit_expand)){
+            p = p + scale_y_continuous(expand = c(y_limit_expand[1], 0, y_limit_expand[2], 0))   # y轴上下限扩展百分比, 第一个向下扩展， 第二个参数为向上扩展%  https://github.com/tidyverse/ggplot2/issues/1669
+        }
+
     }
 
 
@@ -351,6 +396,7 @@ barplot_continuous <- function(data, x, sub.x, value,
                   legend.title = element_blank(),
                   legend.text= element_text(color="black", size = legend.size),
                   axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
+                  axis.text.y = element_text(colour = 'black'),
                   axis.ticks.x = element_blank())
     }else{
         p = p + plot.theme

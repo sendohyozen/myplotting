@@ -13,7 +13,7 @@
 #' @param title plot title default NULL
 #' @param x_lab plot x lab default NULL
 #' @param y_lab plot x lab default ''
-#' @param base.size base text size of the theme default 15
+#' @param base.size base text size of the theme default 18
 #' @param legend.position  legend position default top
 #' @param legend.size legend text size default 12
 #' @param lab.position the start position of labs (y value), default 0.1
@@ -31,7 +31,7 @@ paretoplot_lab <- function(data, x_value, y_value, fill_group,
                            bar.width = 0.6, lab.size=3, lab.position=0.1,
                            pal = ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
                            title = NULL, x_lab =NULL, y_lab='',
-                           base.size=15, legend.position = 'top', legend.size =12,
+                           base.size=18, legend.position = 'top', legend.size =12,
                            chinese = F,
                            cord.filp =F){
 
@@ -79,7 +79,7 @@ paretoplot_lab <- function(data, x_value, y_value, fill_group,
     if(cord.filp==T){
         # theme
         p = p + coord_flip() +
-            theme_classic(base_size = base.size, base_family = font.family ) +
+            theme_classic(base_size = base.size,  base_family = font.family ) +
             theme(plot.title = element_text(colour = "black", face = "bold", hjust = 0.5),
                   legend.position = legend.position,
                   legend.title = element_blank(),
@@ -145,7 +145,7 @@ paretoplot_lab <- function(data, x_value, y_value, fill_group,
 #' @param title plot title default NULL
 #' @param x_lab plot x lab default NULL
 #' @param y_lab plot y lab default ''
-#' @param base.size base text size of the theme default 15
+#' @param base.size base text size of the theme default 18
 #' @param legend.position legend position default top
 #' @param legend.size legend text size default 12
 #' @param chinese if text in Chinese ,default False
@@ -162,7 +162,7 @@ paretoplot_axis <- function(data, x_value, y_value, fill_group,
                             bar.width = 0.6, x.lab.size = 10,
                             pal = ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
                             title = NULL, x_lab =NULL, y_lab='',
-                            base.size=15, legend.position = 'top', legend.size =12,
+                            base.size=18, legend.position = 'top', legend.size =12,
                             chinese = F,
                             cord.filp =F){
 
@@ -273,7 +273,7 @@ paretoplot_axis <- function(data, x_value, y_value, fill_group,
 #' @param title plot title default NULL
 #' @param x_lab plot x lab default NULL
 #' @param y_lab plot y lab default ''
-#' @param base.size base text size of the theme default 15
+#' @param base.size base text size of the theme default 18
 #' @param legend.position legend position default top
 #' @param legend.size legend text size default 12
 #' @param chinese if text in Chinese ,default False
@@ -288,7 +288,7 @@ paretoplot_neighbor <- function(data, x_value, y_value, fill, add.labs=T, labs, 
                                 bar_width = 0.6,
                                 pal= ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
                                 title = NULL, x_lab =NULL, y_lab='',
-                                base.size=15, legend.position = 'top', legend.size =12,
+                                base.size=18, legend.position = 'top', legend.size =12,
                                 chinese = F,
                                 cord.filp =F){
     if(chinese==T){

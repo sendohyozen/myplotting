@@ -14,11 +14,12 @@ barplot_identity(
   labtext.size = 3,
   xlab_level,
   fill_level,
+  y_limit_expand,
   title = NULL,
   x_lab = NULL,
   y_lab = "",
   bar_width = 0.6,
-  base.size = 15,
+  base.size = 18,
   legend.position = "top",
   legend.size = 12,
   xlab.angle = 0,
@@ -46,6 +47,8 @@ barplot_identity(
 
 \item{fill_level}{levels of fill lab}
 
+\item{y_limit_expand}{expand the y limit, give a numer of percent of y low/up limit, such as c(0, 0.05) for expanding 0\% to lower limit and 5\% to upper limit, default NULL}
+
 \item{title}{plot title}
 
 \item{x_lab}{plot x lab}
@@ -54,7 +57,7 @@ barplot_identity(
 
 \item{bar_width}{bar width default 0.6}
 
-\item{base.size}{base text size of the theme default 15}
+\item{base.size}{base text size of the theme default 18}
 
 \item{legend.position}{legend position default top}
 

@@ -181,7 +181,7 @@ ggpie_identity <- function(data, group, value, labs, group.levels,
 #' @param label_split Pattern used to split the label, support regular expression. Default: ' ', give a blank space ' ' could make the labels into two lines
 #' @param label_size Size of the label. Default: 4.
 #' @param label_pos Label position, chosen from in and out. Default: in
-#' @param label_threshold Threshold of the ratio to determine label position (in/out pie). Default: NULL.
+#' @param label_threshold Threshold of the ratio to determine label position (in/out pie). Default: NULL. This parameter only works when  label_pos = 'in' and label_rotate = 'horizon'
 #' @param pal Colors used. Default: ggsci::pal_futurama(alpha = 0.8)(12)
 #' @param label_color Color of the label. Default: black.
 #' @param border_color Border color. Default: black.

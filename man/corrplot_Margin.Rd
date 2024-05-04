@@ -21,7 +21,7 @@ corrplot_Margin(
   title = NULL,
   x_lab,
   y_lab,
-  base.size = 15,
+  base.size = 18,
   legend.position = "top",
   legend.size = 12,
   plot.theme
@@ -60,7 +60,7 @@ corrplot_Margin(
 
 \item{y_lab}{plot y lab}
 
-\item{base.size}{base text size of the theme default 15}
+\item{base.size}{base text size of the theme default 18}
 
 \item{legend.position}{legend position default top}
 
