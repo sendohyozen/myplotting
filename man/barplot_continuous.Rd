@@ -9,12 +9,12 @@ barplot_continuous(
   x,
   sub.x,
   value,
+  na.rm = F,
   errbar = T,
   lab_text = F,
   labtext.size = 3,
   xlab_level,
   fill_level,
-  y_limit_expand,
   bar_width = 0.9,
   title = NULL,
   x_lab = NULL,
@@ -24,6 +24,7 @@ barplot_continuous(
   legend.size = 12,
   xlab.angle = 0,
   pal = (ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6))(9),
+  alpha.bar = 1,
   chinese = F,
   plot.theme
 )
@@ -37,6 +38,8 @@ barplot_continuous(
 
 \item{value}{Y column name,  data type must be continuous for mean/sd}
 
+\item{na.rm}{if remove NA values, default F}
+
 \item{errbar}{if  adding error bar, default True}
 
 \item{lab_text}{if  adding text of y value, default False}
@@ -46,8 +49,6 @@ barplot_continuous(
 \item{xlab_level}{levels of x lab}
 
 \item{fill_level}{levels of fill (legend)}
-
-\item{y_limit_expand}{expand the y limit, give a numer of percent of y low/up limit, such as c(0, 0.05) for expanding 0\% to lower limit and 5\% to upper limit, default NULL}
 
 \item{bar_width}{bar width default 0.9}
 
@@ -66,6 +67,8 @@ barplot_continuous(
 \item{xlab.angle}{if rotate the x labs defualt 0}
 
 \item{pal}{color for filling  default pal_lancet}
+
+\item{alpha.bar}{alpha of the bar, default 1}
 
 \item{chinese}{if text in Chinese ,default False}
 

@@ -417,38 +417,160 @@ cor.analysis = function(data, factor1, factor2, method= 'spearman'){
 
 
 
-#' corelation showing on two different matrix, not all the correlation of factors in one row
+
+#' correlation showing on two different matrix, not all the correlation of factors in one row, line show with spearman/pearson/mantel test
 #'
 #' @param df_matrix correlation show using matrix
-#' @param df_link  correlation show using link lines on the factors of the matrix
-#' @param text.size text size ,default 2.5
+#' @param df_link correlation show using link lines on the factors of the matrix
+#' @param mantel  if using mantel test, default F
+#' @param link_column_list if mantel test used; a list object define link points on the df_line,using colnum numbers, can be multi-columns using :
+#' @param cor.method cor analysis methods ,default spearman
+#' @param sig.adding if show significance labs on the matrix, default T
+#' @param r.line.break a vector of break points (2 or 3 numbers) setting for abs value of r , default c(0.2, 0.6)
+#' @param matrix.pal a color setting for the matrix, must be a vector of 5 colors;
+#' @param line.pal a color setting for the line for postive or negative relationship, a vector of 2 colors
+#' @param text.size  text size of the matrix, default 16
+#' @param lab.size  lab text size of line link points default 5
+#' @param legend.title.size text size of the legend title default 14
+#' @param legend.text.size text size of the legend text default 12
 #'
 #' @return a link line corplot
 #' @export
 #'
-#' @examples cor_link_plot(df_matrix = df_expr, df_link = immucell_df)
-cor_link_plot <- function(df_matrix, df_link, text.size=2.5){
+#' @examples cor_link_plot(df_matrix= df_expr, df_link=immucell_df, mantel=T, link_column_list=list(B = 1, CD4T = 2, CD8T = 3))
+#'  cor_link_plot(df_matrix = ko2 , df_link = ko1, r.line.break = c(0.3, 0.7))
+#'
+cor_link_plot <- function(df_matrix, df_link, mantel=F, link_column_list,
+                          cor.method = 'spearman', sig.adding=T,
+                          r.line.break = c(0.2, 0.6),
+                          matrix.pal = c("#730922", "#e4795d", "#fbfbf7", "#4895c7", "#2e405f"), line.pal=c("#009f76" ,"#d95e27") ,
+                          text.size=16, lab.size=5, legend.title.size=14, legend.text.size=12){
 
-    # link between the two matrix, show of link lines
-    link_cor = ggcor::correlate(df_link , df_matrix, cor.test = T) %>%
-        as_cor_tbl() %>%
-        select(spec = .row.names, env = .col.names, r, p.value) %>%
-        mutate(
-            rd = cut(r, breaks = c(-Inf, 0.2, 0.4, Inf),
-                     labels = c("< 0.2", "0.2 - 0.4", ">= 0.4")),
-
-            pd = cut(p.value, breaks = c(-Inf, 0.01, 0.05, Inf),
-                     labels = c("< 0.01", "0.01 - 0.05", ">= 0.05")))
+    # 计算组内（单矩阵内）间相关性（未进行P值矫正）：
+    cor2 = linkET::correlate(df_matrix, method = cor.method)#所有因子都符合正态分布的可能性较小，这里采用Spearman相关性进行演示。如果数据都符合正态分布，将Spearman改成Pearson。下同。
+    corr2 = cor2 %>% linkET::as_md_tbl()
 
 
-    # link cor plot
-    p = ggcor::quickcor(df_matrix, type = "upper", cor.test = T) +
-        geom_square() +
-        geom_mark(size = text.size) +
-        ggcor::anno_link(data = link_cor, aes(color = pd, size = rd)) +
-        scale_size_manual(values = c(0.5, 1, 2)) +
-        scale_colour_manual(values = c("#56B4E9", "#E69F00", "#999999")) +
-        scale_fill_gradient2(midpoint = 0.5,low = "#80B1D3",mid = "white",high = "#8214A0",space = "Lab")
+
+    #计算组间（2个数据框间）相关性（未进行P值矫正）:
+    if(mantel == T){
+        # Mantel test
+        cor3 <- linkET::mantel_test(spec = df_link, env = df_matrix, spec_select = link_column_list, mantel_fun = 'mantel')
+        link.method = "|Mantel's r|"
+
+
+    }else{
+        # No mental spearman /pearson
+        cor3 = linkET::correlate(df_link, df_matrix, method = cor.method)
+        link.method = paste0("|",cor.method,"'s r|")
+    }
+
+    # 转换格式
+    corr3 = cor3 %>% linkET::as_md_tbl()
+
+
+
+    #组合网络热图绘制
+    #生物因子和环境因子间相关性系数和P值分区（break点一般2个或3个，否则太细难区分）
+    if(length(r.line.break) == 2){
+        break_labs = c(paste0("<", r.line.break[1]),
+                       paste0(r.line.break[1], "-", r.line.break[2]),
+                       paste0(r.line.break[2], "-1"))
+
+        break.line.sets  = setNames(c(0.1, 0.4, 0.8), break_labs)  # 后面连线粗细的设置关联
+
+    }else if(length(r.line.break) == 3){
+        break_labs = c(paste0("<", r.line.break[1]),
+                       paste0(r.line.break[1], "-", r.line.break[2]),
+                       paste0(r.line.break[2], "-", r.line.break[3]),
+                       paste0(r.line.break[3], "-1"))
+
+        break.line.sets  = setNames(c(0.1, 0.3, 0.5, 0.7), break_labs)  # 后面连线粗细的设置关联
+
+
+    }else{
+        stop('r.line.break  must be a vector of two or three numbers, not including the inital 0 and the end 1 !')
+    }
+
+
+    # 切割数据相关系数与p值
+    r.p.data.plot = corr3 %>%
+        mutate(r.sign = cut(r, breaks = c(-Inf, 0, Inf),
+                            labels = c("Negative", "Positive")),
+               p.sign = cut(p, breaks = c(0, 0.05, Inf),
+                            labels = c("P<0.05", "P>=0.05"),
+                            include.lowest = TRUE, # 较小值是否为闭区间,
+                            right = FALSE),  # 较大值是否为闭区间
+               r.abs = cut(abs(r), breaks = c(0, r.line.break, 1),
+                           labels = break_labs,
+                           include.lowest = TRUE,#较小值是否为闭区间,
+                           right = FALSE),#较大值是否为闭区间
+        )
+
+    # print(r.p.data.plot$`r.abs`)
+
+
+    # 绘制相关性热图-半角矩形:
+    p = linkET::qcorrplot(cor2,
+                          grid_col = "grey50", # 网格线颜色
+                          grid_size = 0.2, # 网格线粗细
+                          type = "upper", # 图形是上三角，想展示在下三角的话upper改lower
+                          diag = F) + # 不展示对角线，想展示的话F改为T
+        linkET::geom_square()
+
+    # 添加显著性标签：
+    if(sig.adding == T){
+        p = p + linkET::geom_mark(size = 4, # * 符号大小
+                                  only_mark = T,
+                                  sig_level = c(0.05, 0.01, 0.001), # <0.05一颗*，<0.01两个**，<0.001三颗***。这个选项是将P值分为这三个level
+                                  sig_thres = 0.05, # 显著性阈值
+                                  colour = 'black') # *符号的颜色
+
+    }
+
+
+    # 在相关性热图上添加Spearman连线:
+    p = p + linkET::geom_couple(data = r.p.data.plot,   # 添加网络图并映射数据
+                                aes(colour = r.sign,  # 连线颜色由r.p.data.plot中的r.sign确定
+                                    size = r.abs,  # 连线粗细由r.p.data.plot中的r.abs确定
+                                    linetype = p.sign), # 线型由r.p.data.plot中的p.sign确定
+                                nudge_x = 0.15, # 标签距离点的距离
+                                curvature = 0.1, # 曲线弯曲程度
+                                label.fontface = 1, # 字体，1是非粗体，2是粗体。
+                                label.family = "sans", # serif表示是Times New Roman字体，想用Arial的话serif改sans
+                                label.size = lab.size) # 字体大小
+
+
+    #继续美化连线:
+    p = p + scale_size_manual(values = break.line.sets) +  # 为每个分类设置连线粗细, 在前面break点时已设置好setName
+        scale_colour_manual(values = c("Negative" =  line.pal[1],
+                                       "Positive" =  line.pal[2] )) +  # 为每个分类设置颜色
+        scale_linetype_manual(values = c("P<0.05" = "solid",
+                                         "P>=0.05" = "dashed")) +
+        scale_fill_gradientn(colours = rev(matrix.pal), # 自定义颜色,和上面p4颜色略不同，提供了另一种自定义颜色的示例。
+                             breaks = seq(-1, 1, 0.5),   # 5 个阶段，需要5个颜色
+                             limits = c(-1, 1)) + #设置图例范围
+        # geom_diag_label()+
+        guides(
+            fill = guide_colorbar(title = paste0(cor.method, "'s r"),
+                                  barwidth = 1,barheight = 8, order = 1),
+            linetype = guide_legend(title = NULL,override.aes = list(size = 6,linewidth = 0.6, order = 3)),
+            colour = guide_legend(title = NULL,override.aes = list(size = 1,linewidth = 0.6, order = 4)),
+            size = guide_legend(title = link.method,
+                                override.aes = list(colour = "black",size = 1),
+                                order = 2)  #此处均为标题设置
+        ) +
+        theme(
+            axis.text=element_text(color="black",size=text.size, family = "sans",face = "plain"),
+            axis.text.x.top =element_text(color="black",size=text.size, family = "sans",face = "plain",angle = 90,hjust = 0,vjust = 0.5),
+            legend.key = element_blank(), #删除图例灰色背景(为了画面更干净)
+            # legend.key.size = unit(0.36, "cm"), #调整图例整体大小
+            # legend.spacing.y = unit(0.8,"cm"),#调整图例之间间距
+            # legend.key.spacing.y = unit(0.2,"cm"),#调整图例之间间距
+            legend.text = element_text(color="black",size=legend.text.size, family = "sans",face = "plain"), # 调整图例文本字体
+            legend.title = element_text(color="black",size=legend.title.size, family = "sans",face = "plain",margin = margin(b = 12)) # 调整图例标题文本字体
+        )
+
 
 
     return(p)
@@ -456,43 +578,222 @@ cor_link_plot <- function(df_matrix, df_link, text.size=2.5){
 
 
 
-#' corelation showing on two different matrix, not all the correlation of factors in one row, line show with mantel test
+
+
+#' Heatmap showing correlation of two different matrix,  could add p significance (*) on the heatmap
 #'
-#' @param df_matrix correlation show using matrix
-#' @param df_link correlation show using link lines on the factors of the matrix
-#' @param link_column_list a list object define link points on the df_line,using colnum numbers, can be multi-columns using :
-#' @param cor.method cor analysis methods ,default spearman
-#' @param text.size  text size ,default 2.5
+#' @param df_row dataframe with column names on the row of the correlation heatmap
+#' @param df_column dataframe with column names on the column of the correlation heatmap
+#' @param cor.method methods for correlation analysis, default spearman
+#' @param sig.adding if adding  significance (*) on the heatmap, default T
+#' @param pal color for the heatmap , a vector of 3 color numbers c(low, mid, high),  default c("#0074b3", "white", "#982b2b")
+#' @param x.lab.size text size of the row name of the heatmap; default 14
+#' @param x.lab.angle text angle of the row name of the heatmap; default 90
+#' @param y.lab.size text size of the column name of the heatmap; default 14
+#' @param y.lab.angle text angle of the column names of the heatmap; default 0
+#' @param legend.title.size text size of the legend title, default 14
+#' @param legend.text.size text size of the legend text, default 12
+#' @param legend.limit  limit of the the legend bar,  a vector of 2 numbers c(low, high), default c(-1, 1)
+#' @param legend.midpoint middle point of the legend bar , default 0
+#' @param legend.break breaks of the legend bar, a vector of numbers in the limits, default seq(-1,1,0.5)
 #'
-#' @return a link line corplot using mantel test
+#' @return a ggplot object of heatmap showing correlation of two different matrix
 #' @export
 #'
-#' @examples cor_link_mantel(df_matrix= df_expr, df_link=immucell_df, link_column_list=list(B = 1, CD4T = 2, CD8T = 3))
-cor_link_mantel <- function(df_matrix, df_link, link_column_list,
-                            cor.method = 'spearman', text.size=2.5){
+#' @examples  cor_heatmap_plot(df_row = dat2, df_column = dat1, cor.method = 'spearman', sig.adding = F,
+#'                            legend.limit = c(-0.2, 1), legend.midpoint = 0.4, legend.break = seq(-0.2, 1, 0.4))
+cor_heatmap_plot <- function(df_row, df_column, cor.method = 'spearman', sig.adding=T,
+                             pal = c("#0074b3", "white", "#982b2b"),
+                             x.lab.size=14, x.lab.angle=90,
+                             y.lab.size=14, y.lab.angle=0,
+                             legend.title.size=14, legend.text.size=12,
+                             legend.limit = c(-1, 1), legend.midpoint=0, legend.break = seq(-1,1,0.5) ){
 
-    # Mantel test
-    mantel <- linkET::mantel_test(spec = df_link, env = df_matrix, spec_select = link_column_list, mantel_fun = 'mantel')
+    # 相关性计算
+    dd = linkET::correlate(x = df_row, y = df_column, method = cor.method) %>% linkET::as_md_tbl() # 两个矩阵的相关性 ，需要格式转换为tibble，为长数据
+    colnames(dd)[1:2] =  c('row', 'column') # 重命名列
 
-    # define link line color and width
-    mantel <- mutate(mantel,
-                     rd = cut(r, breaks = c(-Inf, 0.2, 0.4, Inf), labels = c('< 0.2', '0.2 - 0.4', '>= 0.4')),
-                     pd = cut(p, breaks = c(-Inf, 0.01, 0.05, Inf), labels = c('< 0.01', '0.01 - 0.05', '>= 0.05'))
-    )
+    # 相关性热图可视化
+    p = ggplot(data = dd, aes(x = row, y = column)) +
+        geom_tile(aes(fill = r),color = "grey") +
+        scale_fill_gradient2(low = pal[1], mid = pal[2], high = pal[3],
+                             name = "Correlation",
+                             limits = legend.limit,  midpoint = legend.midpoint, breaks = legend.break )
 
-    # link cor plot with mantel test results
-    p = linkET::qcorrplot(correlate(df_matrix, method = cor.method), type = 'upper', diag = FALSE) +   # cor matrix on the upper
-        geom_square() +   # square heatmap matrix
-        geom_mark(sep = '\n', size = text.size, sig.thres = 0.05) +  # show cor Spearman results and p value
-        geom_couple(aes(color = pd, size = rd), data = mantel, curvature = nice_curvature()) +  # metal results lines
-        scale_fill_gradientn(colors = c('#053061', '#68A8CF', 'white', '#F7B394', '#67001F'), limits = c(-1, 1)) +  # heatmap color
-        scale_size_manual(values = c(0.5, 1, 2)) +  # Mantel results define line width
-        scale_color_manual(values = c('#D95F02', '#1B9E77', '#E0E0E0')) +  # mantel p value for line colors
-        guides(color = guide_legend(title = "Mantel's p", order = 1),  # legend
-               size = guide_legend(title = "Mantel's r", order = 2),
-               fill = guide_colorbar(title = "Spearman's r", order = 3)) +
-        theme(legend.key = element_blank())
+    # 添加显著标志
+    if(sig.adding==T){
+
+        tmp = case_when(as.vector(dd$p) < 0.001~"****",
+                        as.vector(dd$p) < 0.001~"***",
+                        as.vector(dd$p) < 0.01~"**",
+                        as.vector(dd$p) < 0.05~"*",
+                        T~ "")
+        dd$label = tmp
+
+        p = p + geom_text(data = dd, aes(x = row, y = column, label = label), vjust = 0.7)
+    }
+
+
+    # 主题调整
+    mytheme = theme(panel.grid = element_blank(),
+                    legend.position = "right",
+                    legend.text = element_text(size = legend.text.size),
+                    legend.title = element_text(size = legend.title.size),
+                    axis.ticks.y = element_blank(),
+                    axis.title = element_blank(),
+                    axis.text.x = element_text(colour = 'black', size = x.lab.size, angle = x.lab.angle, hjust = 1),
+                    axis.text.y = element_text(colour = 'black', size = y.lab.size, angle = y.lab.angle))
+
+    p = p + theme_minimal() +
+        mytheme
 
 
     return(p)
 }
+
+
+
+#'  Heatmap showing correlation of two different matrix,  could show p values with/without significance (P < 0.05)
+#'
+#' @param df_row dataframe with column names on the row of the correlation heatmap
+#' @param df_column dataframe with column names on the column of the correlation heatmap
+#' @param cor.method methods for correlation analysis, default spearman
+#' @param pal color for the heatmap , a vector of 3 color numbers c(low, mid, high),  default c("#0074b3", "white", "#982b2b")
+#' @param x.lab.size text size of the row name of the heatmap; default 14
+#' @param x.lab.angle  text angle of the row name of the heatmap; default 90
+#' @param y.lab.size text size of the column name of the heatmap; default 14
+#' @param y.lab.angle text angle of the column names of the heatmap; default 0
+#' @param legend.title.size text size of the legend title, default 14
+#' @param legend.text.size  text size of the legend text, default 12
+#' @param legend.limit  limit of the the legend bar,  a vector of 2 numbers c(low, high), default c(-1, 1)
+#' @param legend.midpoint middle point of the legend bar , default 0
+#' @param legend.break breaks of the legend bar, a vector of numbers in the limits, default seq(-1,1,0.5)
+#'
+#' @return a ggplot object of heatmap showing correlation of two different matrix
+#' @export
+#'
+#' @examples cor_heatmap_plot2(df_row = dat2, df_column = dat1, cor.method = 'spearman',
+#'           legend.limit = c(-0.2, 1), legend.midpoint = 0.4, legend.break = seq(-0.2, 1, 0.4), pal = c("#4d685c", "white", "#a84b7c"))
+cor_heatmap_plot2 <- function(df_row, df_column, cor.method = 'spearman',
+                              pal = c("#0074b3", "white", "#982b2b"),
+                              x.lab.size=14, x.lab.angle=90,
+                              y.lab.size=14, y.lab.angle=0,
+                              legend.title.size=14, legend.text.size=12,
+                              legend.limit = c(-1, 1), legend.midpoint=0, legend.break = seq(-1,1,0.5) ){
+
+    # 相关性计算
+    dd = linkET::correlate(x = df_row, y = df_column, method = cor.method) %>% linkET::as_md_tbl() # 两个矩阵的相关性 ，需要格式转换为tibble，为长数据
+    colnames(dd)[1:2] =  c('row', 'column') # 重命名列
+
+    # 区分p值是否显著
+    dd$Group = ifelse(dd$p < 0.05, "p < 0.05", "p > 0.05")
+
+    # 相关性热图可视化--不显著为打叉
+    p <- ggplot(data = dd, aes(x = row,y = column)) +
+        geom_tile(aes(color = r), fill = "white") +
+        geom_point(aes(color = r, shape = factor(Group)), size = 6) +
+        scale_shape_manual(values = c(15,4), name = NULL) +  # 映射形状 15 方形， 4 叉叉
+        scale_color_gradient2(low = pal[1], mid = pal[2], high = pal[3],
+                              name = "Correlation",
+                              limits = legend.limit, midpoint = legend.midpoint, breaks = legend.break ) +
+        coord_fixed()  # 设置x和y轴比例为1，确保tile为正方形
+
+
+    # 主题调整
+    mytheme = theme(panel.grid = element_blank(),
+                    legend.position = "right",
+                    legend.text = element_text(size = legend.text.size),
+                    legend.title = element_text(size = legend.title.size),
+                    axis.ticks.x = element_blank(),
+                    axis.ticks.y = element_blank(),
+                    axis.title = element_blank(),
+                    axis.text.x = element_text(colour = 'black', size = x.lab.size, angle = x.lab.angle, hjust = 0,vjust = 1),
+                    axis.text.y = element_text(colour = 'black', size = y.lab.size, angle = y.lab.angle))
+
+
+    p = p + scale_x_discrete(position = "top") + #x轴移动到顶部
+        theme_bw() +
+        mytheme
+
+    return(p)
+}
+
+
+
+
+#' Bubble plot showing correlation of two different matrix,  bubble size for -log10(p), bubble color of correlation r
+#'
+#' @param df_row  dataframe with column names on the row of the correlation plot
+#' @param df_column dataframe with column names on the column of the correlation plot
+#' @param cor.method  methods for correlation analysis, default spearman
+#' @param pal color for the bubble , a vector of 3 color numbers c(low, mid, high),  default c("#4d685c", "white", "#a84b7c")
+#' @param x.lab.size text size of the row name of the heatmap; default 14
+#' @param x.lab.angle text angle of the row name of the heatmap; default 90
+#' @param y.lab.size text size of the column name of the heatmap; default 14
+#' @param y.lab.angle text angle of the column names of the heatmap; default 0
+#' @param legend.title.size text size of the legend title, default 14
+#' @param legend.text.size  text size of the legend text, default 12
+#' @param bulb.size.limit size limit  for the bubble (-log10P) , a vector of 2 numbers c(low, high),  default c(0, 200)
+#' @param bulb.size.break breaks of the bubble size, a vector of numbers in the limits, default seq(0, 200, 50)
+#' @param bulb.size.labels labels of the bubble size, a vector of numbers in the limits, default same with bulb.size.break
+#' @param bulb.color.limit color limit of the bubble (r),  a vector of 2 numbers c(low, high), default c(-1, 1)
+#' @param bulb.color.midpoint middle point of the bubble color , default 0
+#' @param bulb.color.break breaks of the bubble color, a vector of numbers in the limits, default seq(-1,1,0.5)
+#'
+#' @return a ggplot object of bubble plot showing correlation of two different matrix
+#' @export
+#'
+#' @examples cor_buble_plot(df_row = dat2, df_column =  dat1, bulb.color.limit = c(-0.2, 0.8), bulb.color.midpoint = 0.4, bulb.color.break = seq(-0.2,0.8,0.2),
+#'           x.lab.size = 12, x.lab.angle = 75, y.lab.size = 12)
+cor_buble_plot <- function(df_row, df_column, cor.method = 'spearman',
+                           pal =  c("#4d685c", "white", "#a84b7c"),
+                           x.lab.size=14, x.lab.angle=90,
+                           y.lab.size=14, y.lab.angle=0,
+                           legend.title.size=14, legend.text.size=12,
+                           bulb.size.limit = c(0, 200), bulb.size.break=seq(0, 200, 50), bulb.size.labels,
+                           bulb.color.limit = c(-1, 1), bulb.color.midpoint = 0, bulb.color.break = seq(-1, 1, 0.5) ){
+
+    # 相关性计算
+    dd = linkET::correlate(x = df_row, y = df_column, method = cor.method) %>% linkET::as_md_tbl() # 两个矩阵的相关性 ，需要格式转换为tibble，为长数据
+    colnames(dd)[1:2] =  c('row', 'column') # 重命名列
+
+    # 转换p值
+    dd$log10P = -log10(dd$p)
+    dd$log10P[is.infinite(dd$log10P)] = 200  # 替换掉无穷大
+
+
+
+    # 气泡大小的断点
+    if(missing(bulb.size.labels)){
+        bulb.size.labels = bulb.size.break
+    }
+
+    # 气泡图
+    p = ggplot(data = dd, aes(x = row, y = column, size = log10P)) +
+        geom_point(shape = 21, aes(fill = r), position =position_dodge(0))+
+        scale_size_continuous(range = c(0, 6), name = "-log10 Pvalue",
+                              limits = bulb.size.limit,  breaks = bulb.size.break, labels = bulb.size.labels ) +
+        scale_fill_gradient2(low = pal[1], mid = pal[2], high = pal[3],
+                             name = "Correlation",
+                             limits = bulb.color.limit, midpoint = bulb.color.midpoint, breaks = bulb.color.break )
+
+    # 主题调整
+    p = p + theme_minimal() +
+        theme(panel.border = element_rect(fill = NA, color = "black", size = 1, linetype = "solid"),
+              panel.grid = element_blank(),
+              axis.ticks.y = element_blank(),
+              axis.title = element_blank(),
+              axis.text.x = element_text(colour = 'black', size = x.lab.size, angle = x.lab.angle, hjust = 1 ),
+              axis.text.y = element_text(colour = 'black', size = y.lab.size,  angle = y.lab.angle) )
+
+    ####拉长图例
+    p = p + theme(legend.position = "bottom",
+                  legend.text = element_text(color = "black",size = legend.text.size),
+                  legend.title = element_text(size = legend.title.size, color = "black")) +
+        guides(fill = guide_colorbar(title.position = "left",title.hjust = 0.5,
+                                     barwidth = 15,barheight = 1.5,ticks = TRUE))
+
+    return(p)
+}
+
+

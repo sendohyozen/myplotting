@@ -90,9 +90,9 @@ paretoplot_lab <- function(data, x_value, y_value, fill_group,
         # adding text
         p <- p + geom_text(plot_df, mapping =aes(label = x,
                                                  x = x,
-                                                 y = ifelse( y < 0,  lab.position, -lab.position), #  text start position
+                                                 y = ifelse( y > 0,  -lab.position, lab.position), #  text start position
                                                  colour = fill,
-                                                 hjust = ifelse(y < 0, "outward",  "inward")),
+                                                 hjust = ifelse(y > 0, 1, 0)),
                            angle = 0,
                            size = lab.size, show.legend = F) +
             scale_color_manual(values = pal)  # color for text
@@ -113,9 +113,9 @@ paretoplot_lab <- function(data, x_value, y_value, fill_group,
         # adding text the position based on y value # ref:https://www.saoniuhuo.com/question/detail-2670244.html  # ref:http://www.taodudu.cc/news/show-158164.html?action=onClick
         p <- p + geom_text(plot_df, mapping =aes(label = x,
                                                  x = x,
-                                                 y = ifelse( y < 0,  lab.position, -lab.position), #  text start position
+                                                 y = ifelse( y > 0,  -lab.position, lab.position), #  text start position
                                                  colour = fill,
-                                                 hjust = ifelse(y < 0, "outward",  "inward")),
+                                                 hjust = ifelse(y > 0, 1, 0)),
                            angle = 90,
                            size = lab.size, show.legend = F) +
             scale_color_manual(values = pal)  # color for text
@@ -402,3 +402,114 @@ paretoplot_neighbor <- function(data, x_value, y_value, fill, add.labs=T, labs, 
 }
 
 
+
+
+
+
+
+
+#' A special bar plot with ordered bars based on y value, and labs lay on the bars
+#'
+#' @param data a dataframe with  x (usually samples , not shown on the plot); y value (numeric); group for filling colors, labs text shown on the bar (not necessary)
+#' @param x_value column name of x value in the dataframe (sample ids, not shown)
+#' @param y_value  column name of y value in the dataframe
+#' @param fill_group column name of filling groups
+#' @param labs column name of lab text shown on the bar ,could be y value or defined as you wish
+#' @param fill_level levels of fill lab
+#' @param descend if using desceding order of y
+#' @param lab.size lab text size default 3
+#' @param pal color for filling  default pal_lancet
+#' @param title plot title default NULL
+#' @param x_lab x axis lab default NULL
+#' @param y_lab y axis lab default NULL
+#' @param legend.title legend title default NULL
+#' @param base.size base text size of the theme default 18
+#' @param legend.position  legend position default top
+#' @param legend.size legend text size default 12
+#' @param chinese if text in Chinese ,default False
+#' @return a ggplot barplot with order y values ; labs outside the bar(2 sides based on y value, like gsea plot)
+#' @export
+#'
+#' @examples waterfallplot(data = data[1:20,], x_value = 'patientID', y_value = 'TIDE', fill_group = 'group', labs = 'TIDE')
+waterfallplot <- function(data, x_value, y_value, fill_group, labs,
+                          fill_level, descend = F,
+                          lab.size=3,
+                          pal = ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
+                          title = NULL, x_lab =NULL, y_lab='', legend.title=NULL,
+                          base.size=18, legend.position = 'top', legend.size =12,
+                          chinese = F){
+    # 是否有中文字符
+    if(chinese==T){
+        font.family = "STHeitiSC-Medium"
+    }else{
+        font.family = "Arial"
+    }
+
+    # plotting data
+    if(missing(labs)){
+        plot_df = data.frame(x = data[[x_value]],
+                             y = data[[y_value]],
+                             fill = data[[fill_group]])
+    }else{
+        plot_df = data.frame(x = data[[x_value]],
+                             y = data[[y_value]],
+                             fill = data[[fill_group]],
+                             lab = data[[labs]])
+    }
+
+    # ordered by y value
+    if(descend == T){
+        plot_df = plot_df %>% arrange(desc(y)) %>% as.data.frame()
+    }else{
+        plot_df = plot_df %>% arrange(y) %>% as.data.frame()
+    }
+
+    # order for filling
+    if(!missing(fill_level)){
+        plot_df$fill = factor(plot_df$fill, levels = fill_level)
+    }
+
+    # number of factors for filling
+    pal = pal[1:length(unique(plot_df$fill))]
+
+    # plotting
+    p = ggplot(plot_df,
+               aes(x = 1:nrow(plot_df),
+                   y = y,
+                   fill = fill)) +
+        geom_bar(stat = "identity", position = position_dodge2(reverse = T)) +   # https://www.5axxw.com/questions/content/etj8ti; https://zhuanlan.zhihu.com/p/409489632; https://www.jianshu.com/p/b744a2975e91
+        scale_fill_manual(values = pal)
+
+    # if adding lab column
+    if(!missing(labs)){
+        p = p + geom_text(data = plot_df,
+                          mapping = aes(label = lab, y = y, colour = fill,
+                                        hjust = ifelse(y>0, 0, 1)),
+                          angle = 90, position = position_dodge2(reverse = T, width = 0.9),
+                          size = lab.size,
+                          vjust = 0.5, show.legend = F) + # position=position_dodge() must be consistent with bar width： https://zhuanlan.zhihu.com/p/409489632
+            scale_color_manual(values = pal)
+    }
+
+
+
+    # labs
+    p = p + ggplot2::labs(title = title, x = x_lab, y = y_lab, fill = legend.title) + # 增加fill的标题 一定要ggplot2::labs（）否则与base系统的会覆盖报错
+        guides(colour="none") # 必须加这句删除color的legend，否则两个color和fill 的legend都会显示 https://blog.csdn.net/LeaningR/article/details/114576555
+
+
+
+    # theme
+    p = p + theme_classic(base_size = base.size, base_family = font.family ) +
+        theme(plot.title = element_text(colour = "black", face = "bold", hjust = 0.5),
+              legend.position = legend.position,
+              legend.title = element_text(color="black", size = legend.size),
+              legend.text= element_text(color="black", size = legend.size),
+              axis.text.x =element_blank(),
+              axis.line.x = element_blank(),
+              axis.ticks.x = element_blank()) +
+        scale_x_continuous(expand = c(0, 0.5, 0, 0))
+
+
+    return(p)
+}

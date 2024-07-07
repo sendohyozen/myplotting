@@ -9,12 +9,12 @@ barplot_identity(
   x_value,
   y_value,
   fill_group,
+  na.rm = F,
   errbar,
   lab_text = F,
   labtext.size = 3,
   xlab_level,
   fill_level,
-  y_limit_expand,
   title = NULL,
   x_lab = NULL,
   y_lab = "",
@@ -24,6 +24,7 @@ barplot_identity(
   legend.size = 12,
   xlab.angle = 0,
   pal = (ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6))(9),
+  alpha.bar = 1,
   chinese = F,
   plot.theme
 )
@@ -37,6 +38,8 @@ barplot_identity(
 
 \item{fill_group}{column name of filling for subtype}
 
+\item{na.rm}{if remove NA values, default F}
+
 \item{errbar}{column name of error bar}
 
 \item{lab_text}{adding text of y value on the bar, default False}
@@ -46,8 +49,6 @@ barplot_identity(
 \item{xlab_level}{levels of x lab}
 
 \item{fill_level}{levels of fill lab}
-
-\item{y_limit_expand}{expand the y limit, give a numer of percent of y low/up limit, such as c(0, 0.05) for expanding 0\% to lower limit and 5\% to upper limit, default NULL}
 
 \item{title}{plot title}
 
@@ -66,6 +67,8 @@ barplot_identity(
 \item{xlab.angle}{if rotate the x labs defualt 0}
 
 \item{pal}{color for filling  default pal_lancet}
+
+\item{alpha.bar}{alpha of the bar, default 1}
 
 \item{chinese}{if text in Chinese ,default False}
 

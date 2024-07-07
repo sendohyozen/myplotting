@@ -13,11 +13,13 @@
 #' @param title plot title
 #' @param x_lab plot x lab
 #' @param y_lab  plot y lab
+#' @param legend.title plot legend title
 #' @param base.size base text size of the theme default 18
 #' @param legend.position legend position default top
 #' @param legend.size legend text size default 12
 #' @param xlab.angle if rotate the x labs defualt 0
 #' @param pal color for filling  default pal_lancet
+#' @param alpha.box alpha of the box filling, default 0.8
 #' @param chinese if text in Chinese ,default False
 #' @param plot.theme plot.theme
 #'
@@ -27,12 +29,14 @@
 #' @examples boxplot(data = ToothGrowth, x_value = 'dose', y_value = 'len', group = 'supp', jitter = T , box.fill = T, box.color = T, xlab_level = c("2", "1", "0.5"), plot.theme = ggprism::theme_prism())
 #'           boxplot(data = data, x_value = 'group', y_value = 'Gene_Expression', group = 'group', title = '', y_lab = 'Gene Expression')
 #'           boxplot(data = data, x_value = 'group', y_value = 'Gene_Expression', group = 'group', title = '', y_lab = 'Gene Expression', paired = 'pair')
+
 boxplot <- function(data, x_value, y_value, group, paired,
                     box.fill = T, box.color = F, jitter = F,
                     xlab_level, group_level,
-                    title = NULL, x_lab =NULL, y_lab='',
+                    title = NULL, x_lab =NULL, y_lab='', legend.title='',
                     base.size=18, legend.position = 'top', legend.size =12, xlab.angle=0,
-                    pal= ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9),
+                    pal= ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6)(9), alpha.box=0.8,
+                    add.p = F, method = 't.test',
                     chinese = F,
                     plot.theme){
 
@@ -70,19 +74,25 @@ boxplot <- function(data, x_value, y_value, group, paired,
     # plotting
     if (box.fill==T & box.color==T){
         p = ggplot(plot_df, aes(x, y)) +
-            geom_boxplot(aes(fill=group, colour = group)) +
+            geom_boxplot(aes(fill=group, colour = group),  alpha = alpha.box) +
             scale_fill_manual(values = pal) +
             scale_color_manual(values = pal)
 
+        title_lab = ggplot2::labs(fill = legend.title)
+
     }else if(box.fill==T & box.color==F){
         p = ggplot(plot_df, aes(x, y)) +
-            geom_boxplot(aes(fill=group)) +
+            geom_boxplot(aes(fill=group), alpha = alpha.box) +
             scale_fill_manual(values = pal)
+
+        title_lab = ggplot2::labs(fill = legend.title)
 
     }else if(box.fill==F & box.color==T){
         p = ggplot(plot_df, aes(x, y)) +
             geom_boxplot(aes(colour = group)) +
             scale_color_manual(values = pal)
+
+        title_lab = ggplot2::labs(colour = legend.title)
 
     }else{
         stop("error, can not have both fill and color in the box with False !!")
@@ -104,14 +114,19 @@ boxplot <- function(data, x_value, y_value, group, paired,
 
 
     # labs
-    p = p + ggtitle(title) +  xlab(x_lab) +  ylab(y_lab)
+    p = p + ggtitle(title) +  xlab(x_lab) +  ylab(y_lab) + title_lab
+
+    if(box.fill==T){
+        p = p + guides(colour="none")  # 必须加这句删除color的legend，否则两个color和fill 的legend都会显示 https://blog.csdn.net/LeaningR/article/details/114576555
+    }
+
 
     # theme
     if(missing(plot.theme)){
         p = p + theme_classic(base_size = base.size,  base_family = font.family ) +
             theme(plot.title = element_text(colour = "black", face = "bold", hjust = 0.5),
                   legend.position = legend.position,
-                  legend.title = element_blank(),
+                  legend.title = element_text(color="black", size = legend.size),
                   legend.text= element_text(color="black", size = legend.size),
                   axis.text.x = element_text(colour = 'black', angle = xlab.angle, hjust =0.5, vjust=0.5),
                   axis.text.y = element_text(colour = 'black'),
@@ -119,7 +134,6 @@ boxplot <- function(data, x_value, y_value, group, paired,
     }else{
         p = p + plot.theme
     }
-
 
 
     return(p)

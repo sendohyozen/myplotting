@@ -2,23 +2,59 @@
 % Please edit documentation in R/correlationplot.R
 \name{cor_link_plot}
 \alias{cor_link_plot}
-\title{corelation showing on two different matrix, not all the correlation of factors in one row}
+\title{correlation showing on two different matrix, not all the correlation of factors in one row, line show with spearman/pearson/mantel test}
 \usage{
-cor_link_plot(df_matrix, df_link, text.size = 2.5)
+cor_link_plot(
+  df_matrix,
+  df_link,
+  mantel = F,
+  link_column_list,
+  cor.method = "spearman",
+  sig.adding = T,
+  r.line.break = c(0.2, 0.6),
+  matrix.pal = c("#730922", "#e4795d", "#fbfbf7", "#4895c7", "#2e405f"),
+  line.pal = c("#009f76", "#d95e27"),
+  text.size = 16,
+  lab.size = 5,
+  legend.title.size = 14,
+  legend.text.size = 12
+)
 }
 \arguments{
 \item{df_matrix}{correlation show using matrix}
 
 \item{df_link}{correlation show using link lines on the factors of the matrix}
 
-\item{text.size}{text size ,default 2.5}
+\item{mantel}{if using mantel test, default F}
+
+\item{link_column_list}{if mantel test used; a list object define link points on the df_line,using colnum numbers, can be multi-columns using :}
+
+\item{cor.method}{cor analysis methods ,default spearman}
+
+\item{sig.adding}{if show significance labs on the matrix, default T}
+
+\item{r.line.break}{a vector of break points (2 or 3 numbers) setting for abs value of r , default c(0.2, 0.6)}
+
+\item{matrix.pal}{a color setting for the matrix, must be a vector of 5 colors;}
+
+\item{line.pal}{a color setting for the line for postive or negative relationship, a vector of 2 colors}
+
+\item{text.size}{text size of the matrix, default 16}
+
+\item{lab.size}{lab text size of line link points default 5}
+
+\item{legend.title.size}{text size of the legend title default 14}
+
+\item{legend.text.size}{text size of the legend text default 12}
 }
 \value{
 a link line corplot
 }
 \description{
-corelation showing on two different matrix, not all the correlation of factors in one row
+correlation showing on two different matrix, not all the correlation of factors in one row, line show with spearman/pearson/mantel test
 }
 \examples{
-cor_link_plot(df_matrix = df_expr, df_link = immucell_df)
+cor_link_plot(df_matrix= df_expr, df_link=immucell_df, mantel=T, link_column_list=list(B = 1, CD4T = 2, CD8T = 3))
+ cor_link_plot(df_matrix = ko2 , df_link = ko1, r.line.break = c(0.3, 0.7))
+
 }

@@ -18,11 +18,15 @@ boxplot(
   title = NULL,
   x_lab = NULL,
   y_lab = "",
+  legend.title = "",
   base.size = 18,
   legend.position = "top",
   legend.size = 12,
   xlab.angle = 0,
   pal = (ggsci::pal_lancet(palette = c("lanonc"), alpha = 0.6))(9),
+  alpha.box = 0.8,
+  add.p = F,
+  method = "t.test",
   chinese = F,
   plot.theme
 )
@@ -54,6 +58,8 @@ boxplot(
 
 \item{y_lab}{plot y lab}
 
+\item{legend.title}{plot legend title}
+
 \item{base.size}{base text size of the theme default 18}
 
 \item{legend.position}{legend position default top}
@@ -63,6 +69,8 @@ boxplot(
 \item{xlab.angle}{if rotate the x labs defualt 0}
 
 \item{pal}{color for filling  default pal_lancet}
+
+\item{alpha.box}{alpha of the box filling, default 0.8}
 
 \item{chinese}{if text in Chinese ,default False}
 
