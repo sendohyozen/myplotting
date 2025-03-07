@@ -10,10 +10,13 @@ cor_heatmap_plot(
   cor.method = "spearman",
   sig.adding = T,
   pal = c("#0074b3", "white", "#982b2b"),
+  border.color = "grey",
   x.lab.size = 14,
   x.lab.angle = 90,
+  row.factor.levels,
   y.lab.size = 14,
   y.lab.angle = 0,
+  col.factor.levels,
   legend.title.size = 14,
   legend.text.size = 12,
   legend.limit = c(-1, 1),
@@ -32,13 +35,19 @@ cor_heatmap_plot(
 
 \item{pal}{color for the heatmap , a vector of 3 color numbers c(low, mid, high),  default c("#0074b3", "white", "#982b2b")}
 
+\item{border.color}{border line color of the tile,  default grey}
+
 \item{x.lab.size}{text size of the row name of the heatmap; default 14}
 
 \item{x.lab.angle}{text angle of the row name of the heatmap; default 90}
 
+\item{row.factor.levels}{row name orders ranked as row.factor.levels}
+
 \item{y.lab.size}{text size of the column name of the heatmap; default 14}
 
 \item{y.lab.angle}{text angle of the column names of the heatmap; default 0}
+
+\item{col.factor.levels}{col name orders ranked as col.factor.levels}
 
 \item{legend.title.size}{text size of the legend title, default 14}
 

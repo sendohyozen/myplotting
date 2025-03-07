@@ -596,6 +596,9 @@ cor_link_plot <- function(df_matrix, df_link, mantel=F, link_column_list,
 #' @param legend.limit  limit of the the legend bar,  a vector of 2 numbers c(low, high), default c(-1, 1)
 #' @param legend.midpoint middle point of the legend bar , default 0
 #' @param legend.break breaks of the legend bar, a vector of numbers in the limits, default seq(-1,1,0.5)
+#' @param border.color border line color of the tile,  default grey
+#' @param row.factor.levels  row name orders ranked as row.factor.levels
+#' @param col.factor.levels col name orders ranked as col.factor.levels
 #'
 #' @return a ggplot object of heatmap showing correlation of two different matrix
 #' @export
@@ -603,9 +606,9 @@ cor_link_plot <- function(df_matrix, df_link, mantel=F, link_column_list,
 #' @examples  cor_heatmap_plot(df_row = dat2, df_column = dat1, cor.method = 'spearman', sig.adding = F,
 #'                            legend.limit = c(-0.2, 1), legend.midpoint = 0.4, legend.break = seq(-0.2, 1, 0.4))
 cor_heatmap_plot <- function(df_row, df_column, cor.method = 'spearman', sig.adding=T,
-                             pal = c("#0074b3", "white", "#982b2b"),
-                             x.lab.size=14, x.lab.angle=90,
-                             y.lab.size=14, y.lab.angle=0,
+                             pal = c("#0074b3", "white", "#982b2b"), border.color = "grey",
+                             x.lab.size=14, x.lab.angle=90,  row.factor.levels,
+                             y.lab.size=14, y.lab.angle=0, col.factor.levels,
                              legend.title.size=14, legend.text.size=12,
                              legend.limit = c(-1, 1), legend.midpoint=0, legend.break = seq(-1,1,0.5) ){
 
@@ -613,9 +616,23 @@ cor_heatmap_plot <- function(df_row, df_column, cor.method = 'spearman', sig.add
     dd = linkET::correlate(x = df_row, y = df_column, method = cor.method) %>% linkET::as_md_tbl() # 两个矩阵的相关性 ，需要格式转换为tibble，为长数据
     colnames(dd)[1:2] =  c('row', 'column') # 重命名列
 
+
+    # row levels
+    if(!missing(row.factor.levels)){
+        dd$row <- factor(dd$row, levels = row.factor.levels )
+    }
+
+    # col levles
+    if(!missing(col.factor.levels)){
+        dd$column <- factor(dd$column, levels = col.factor.levels )
+    }
+
+
+
+
     # 相关性热图可视化
     p = ggplot(data = dd, aes(x = row, y = column)) +
-        geom_tile(aes(fill = r),color = "grey") +
+        geom_tile(aes(fill = r), color = border.color) +
         scale_fill_gradient2(low = pal[1], mid = pal[2], high = pal[3],
                              name = "Correlation",
                              limits = legend.limit,  midpoint = legend.midpoint, breaks = legend.break )
@@ -668,6 +685,8 @@ cor_heatmap_plot <- function(df_row, df_column, cor.method = 'spearman', sig.add
 #' @param legend.limit  limit of the the legend bar,  a vector of 2 numbers c(low, high), default c(-1, 1)
 #' @param legend.midpoint middle point of the legend bar , default 0
 #' @param legend.break breaks of the legend bar, a vector of numbers in the limits, default seq(-1,1,0.5)
+#' @param row.factor.levels row name orders ranked as row.factor.levels
+#' @param col.factor.levels col name orders ranked as col.factor.levels
 #'
 #' @return a ggplot object of heatmap showing correlation of two different matrix
 #' @export
@@ -676,8 +695,8 @@ cor_heatmap_plot <- function(df_row, df_column, cor.method = 'spearman', sig.add
 #'           legend.limit = c(-0.2, 1), legend.midpoint = 0.4, legend.break = seq(-0.2, 1, 0.4), pal = c("#4d685c", "white", "#a84b7c"))
 cor_heatmap_plot2 <- function(df_row, df_column, cor.method = 'spearman',
                               pal = c("#0074b3", "white", "#982b2b"),
-                              x.lab.size=14, x.lab.angle=90,
-                              y.lab.size=14, y.lab.angle=0,
+                              x.lab.size=14, x.lab.angle=90,  row.factor.levels,
+                              y.lab.size=14, y.lab.angle=0, col.factor.levels,
                               legend.title.size=14, legend.text.size=12,
                               legend.limit = c(-1, 1), legend.midpoint=0, legend.break = seq(-1,1,0.5) ){
 
@@ -687,6 +706,18 @@ cor_heatmap_plot2 <- function(df_row, df_column, cor.method = 'spearman',
 
     # 区分p值是否显著
     dd$Group = ifelse(dd$p < 0.05, "p < 0.05", "p > 0.05")
+
+
+    # row levels
+    if(!missing(row.factor.levels)){
+        dd$row <- factor(dd$row, levels = row.factor.levels )
+    }
+
+    # col levles
+    if(!missing(col.factor.levels)){
+        dd$column <- factor(dd$column, levels = col.factor.levels )
+    }
+
 
     # 相关性热图可视化--不显著为打叉
     p <- ggplot(data = dd, aes(x = row,y = column)) +
